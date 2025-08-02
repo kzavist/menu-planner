@@ -281,11 +281,14 @@
             };
 
             const generateMenuPlan = () => {
+                  console.log('Generate menu clicked!');
+                  console.log('Recipes available:', recipes.length);
+                      // Don't auto-fetch if no recipes - just show an alert
                 if (recipes.length === 0) {
-                    fetchRecipes().then(() => {
-                        setTimeout(() => generateMenuPlan(), 500);
-                    });
+                     alert('No recipes loaded yet. Please wait for recipes to load automatically, or try refreshing the page.');
                     return;
+                    //fetchRecipes().then(() => {
+                      //  setTimeout(() => generateMenuPlan(), 500);
                 }
                 
                 const weeklyBudget = parseFloat(budget) || 100;
