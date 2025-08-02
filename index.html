@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Menu Planner</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Lucide icons as simple objects to avoid external dependency issues
+        const Icons = {
+            Plus: () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+                React.createElement('line', { x1: 12, y1: 5, x2: 12, y2: 19 }),
+                React.createElement('line', { x1: 5, y1: 12, x2: 19, y2: 12 })
+            ),
+            X: () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }),
+                React.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })
+            ),
+            DollarSign: () => React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('line', { x1: 12, y1: 1, x2: 12, y2: 23 }),
+                React.createElement('path', { d: 's 17 5 c 0 0 0 7 0 3 0 5.5 0 5.5 0 0z' }),
+                React.createElement('path', { d: 's 2 5 c 0 0 0 7 0 3 0 5.5 0 5.5 0 0z' })
+            ),
+            ShoppingCart: () => React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('circle', { cx: 9, cy: 21, r: 1 }),
+                React.createElement('circle', { cx: 20, cy: 21, r: 1 }),
+                React.createElement('path', { d: 'm1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6' })
+            ),
+            Calendar: () => React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('rect', { x: 3, y: 4, width: 18, height: 18, rx: 2, ry: 2 }),
+                React.createElement('line', { x1: 16, y1: 2, x2: 16, y2: 6 }),
+                React.createElement('line', { x1: 8, y1: 2, x2: 8, y2: 6 }),
+                React.createElement('line', { x1: 3, y1: 10, x2: 21, y2: 10 })
+            ),
+            Filter: () => React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('polygon', { points: '22,3 2,3 10,12.46 10,19 14,21 14,12.46' })
+            ),
+            Search: () => React.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('circle', { cx: 11, cy: 11, r: 8 }),
+                React.createElement('path', { d: 'm21 21-4.35-4.35' })
+            ),
+            ExternalLink: () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                React.createElement('path', { d: '18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' }),
+                React.createElement('polyline', { points: '15,3 21,3 21,9' }),
+                React.createElement('line', { x1: 10, y1: 14, x2: 21, y2: 3 })
+            ),
+            RefreshCw: ({ className }) => React.createElement('svg', { 
+                width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+                className: className
+            },
+                React.createElement('polyline', { points: '23,4 23,10 17,10' }),
+                React.createElement('polyline', { points: '1,20 1,14 7,14' }),
+                React.createElement('path', { d: '20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4a9 9 0 0 1-14.85 4.36L23 14' })
+            )
+        };
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const MenuPlanner = () => {
+            const [dietaryRestrictions, setDietaryRestrictions] = useState([]);
+            const [budget, setBudget] = useState('');
+            const [numAdults, setNumAdults] = useState(2);
+            const [numKids, setNumKids] = useState(0);
+            const [deals, setDeals] = useState([]);
+            const [menuPlan, setMenuPlan] = useState({});
+            const [ingredients, setIngredients] = useState([]);
+            const [recipes, setRecipes] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [newDeal, setNewDeal] = useState({ item: '', price: '', originalPrice: '' });
+
+            const commonRestrictions = [
+                'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 
+                'Low-Carb', 'Keto', 'Paleo', 'Low-Sodium', 'Diabetic-Friendly', 'Flexitarian'
+            ];
+
+            const stores = [
+                { name: 'Walmart', api: 'walmart', supported: true },
+                { name: 'Target', api: 'target', supported: true },
+                { name: 'Kroger', api: 'kroger', supported: true },
+                { name: 'Publix', api: 'publix', supported: true },
+                { name: 'Safeway', api: 'safeway', supported: false },
+                { name: 'Whole Foods', api: 'wholefoods', supported: false }
+            ];
+
+            // Auto-fetch recipes when dietary restrictions change
+            useEffect(() => {
+                fetchRecipes();
+            }, [dietaryRestrictions]);
+
+            // Also fetch initial recipes on component mount
+            useEffect(() => {
+                fetchRecipes();
+            }, []);
+
+            const addDietaryRestriction = (restriction) => {
+                if (!dietaryRestrictions.includes(restriction)) {
+                    setDietaryRestrictions([...dietaryRestrictions, restriction]);
+                }
+            };
+
+            const removeDietaryRestriction = (restriction) => {
+                setDietaryRestrictions(dietaryRestrictions.filter(r => r !== restriction));
+            };
+
+            const addDeal = () => {
+                if (newDeal.item && newDeal.price) {
+                    setDeals([...deals, { ...newDeal, id: Date.now() }]);
+                    setNewDeal({ item: '', price: '', originalPrice: '' });
+                }
+            };
+
+            const removeDeal = (id) => {
+                setDeals(deals.filter(deal => deal.id !== id));
+            };
+
+            const fetchRecipes = async () => {
+                setLoading(true);
+                
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    let allRecipes = [];
+                    
+                    const expandedRecipeDatabase = {
+                        'Vegetarian': [
+                            { name: 'Mediterranean Quinoa Bowl', ingredients: ['quinoa', 'chickpeas', 'cucumber', 'tomatoes', 'feta cheese', 'olive oil'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 12, dietaryTags: ['vegetarian'] },
+                            { name: 'Veggie Pad Thai', ingredients: ['rice noodles', 'tofu', 'bean sprouts', 'peanuts', 'lime', 'pad thai sauce'], cookTime: 20, servings: 3, difficulty: 'Medium', url: '#', estimatedCost: 10, dietaryTags: ['vegetarian'] },
+                            { name: 'Spinach Ricotta Shells', ingredients: ['pasta shells', 'spinach', 'ricotta cheese', 'mozzarella', 'marinara sauce'], cookTime: 45, servings: 6, difficulty: 'Medium', url: '#', estimatedCost: 14, dietaryTags: ['vegetarian'] },
+                            { name: 'Caprese Grilled Cheese', ingredients: ['sourdough bread', 'mozzarella', 'tomatoes', 'basil', 'balsamic glaze'], cookTime: 10, servings: 2, difficulty: 'Easy', url: '#', estimatedCost: 8, dietaryTags: ['vegetarian'] },
+                            { name: 'Mushroom Risotto', ingredients: ['arborio rice', 'mushrooms', 'vegetable broth', 'parmesan', 'white wine'], cookTime: 35, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 16, dietaryTags: ['vegetarian'] },
+                            { name: 'Eggplant Parmesan', ingredients: ['eggplant', 'marinara sauce', 'mozzarella', 'parmesan', 'breadcrumbs'], cookTime: 60, servings: 6, difficulty: 'Medium', url: '#', estimatedCost: 18, dietaryTags: ['vegetarian'] },
+                            { name: 'Vegetable Curry', ingredients: ['mixed vegetables', 'coconut milk', 'curry powder', 'onion', 'garlic', 'rice'], cookTime: 30, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 11, dietaryTags: ['vegetarian'] },
+                            { name: 'Black Bean Quesadillas', ingredients: ['tortillas', 'black beans', 'cheese', 'peppers', 'onion'], cookTime: 15, servings: 3, difficulty: 'Easy', url: '#', estimatedCost: 9, dietaryTags: ['vegetarian'] }
+                        ],
+                        'Vegan': [
+                            { name: 'Lentil Walnut Bolognese', ingredients: ['lentils', 'walnuts', 'carrots', 'celery', 'tomato sauce', 'pasta'], cookTime: 35, servings: 6, difficulty: 'Easy', url: '#', estimatedCost: 8, dietaryTags: ['vegan', 'vegetarian'] },
+                            { name: 'Chickpea Curry', ingredients: ['chickpeas', 'coconut milk', 'curry spices', 'onion', 'garlic', 'rice'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 9, dietaryTags: ['vegan', 'vegetarian'] },
+                            { name: 'Buddha Bowl', ingredients: ['quinoa', 'roasted vegetables', 'chickpeas', 'tahini', 'hemp seeds'], cookTime: 30, servings: 2, difficulty: 'Easy', url: '#', estimatedCost: 13, dietaryTags: ['vegan', 'vegetarian'] },
+                            { name: 'Vegan Tacos', ingredients: ['corn tortillas', 'black beans', 'avocado', 'salsa', 'lettuce'], cookTime: 15, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 10, dietaryTags: ['vegan', 'vegetarian'] },
+                            { name: 'Coconut Rice with Vegetables', ingredients: ['jasmine rice', 'coconut milk', 'mixed vegetables', 'soy sauce'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 12, dietaryTags: ['vegan', 'vegetarian'] },
+                            { name: 'Stuffed Bell Peppers', ingredients: ['bell peppers', 'quinoa', 'black beans', 'corn', 'nutritional yeast'], cookTime: 40, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 15, dietaryTags: ['vegan', 'vegetarian'] }
+                        ],
+                        'Flexitarian': [
+                            { name: 'Mediterranean Quinoa Bowl', ingredients: ['quinoa', 'chickpeas', 'cucumber', 'tomatoes', 'feta cheese', 'olive oil'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 12, dietaryTags: ['vegetarian', 'flexitarian'] },
+                            { name: 'Grilled Chicken Salad', ingredients: ['chicken breast', 'mixed greens', 'cherry tomatoes', 'cucumber', 'olive oil'], cookTime: 20, servings: 2, difficulty: 'Easy', url: '#', estimatedCost: 16, dietaryTags: ['flexitarian'] },
+                            { name: 'Turkey Vegetable Stir Fry', ingredients: ['ground turkey', 'mixed vegetables', 'soy sauce', 'ginger', 'rice'], cookTime: 20, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 14, dietaryTags: ['flexitarian'] },
+                            { name: 'Fish Tacos', ingredients: ['white fish', 'corn tortillas', 'cabbage slaw', 'avocado', 'lime'], cookTime: 25, servings: 3, difficulty: 'Medium', url: '#', estimatedCost: 18, dietaryTags: ['flexitarian'] },
+                            { name: 'Veggie Burger Night', ingredients: ['veggie patties', 'burger buns', 'lettuce', 'tomato', 'avocado'], cookTime: 15, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 16, dietaryTags: ['vegetarian', 'flexitarian'] }
+                        ],
+                        'Gluten-Free': [
+                            { name: 'Thai Curry with Rice', ingredients: ['coconut milk', 'curry paste', 'vegetables', 'jasmine rice', 'lime'], cookTime: 30, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 11, dietaryTags: ['gluten-free', 'vegetarian'] },
+                            { name: 'Grilled Salmon with Vegetables', ingredients: ['salmon fillets', 'asparagus', 'bell peppers', 'olive oil', 'lemon'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 18, dietaryTags: ['gluten-free'] },
+                            { name: 'Quinoa Stuffed Peppers', ingredients: ['bell peppers', 'quinoa', 'ground turkey', 'tomatoes', 'cheese'], cookTime: 45, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 17, dietaryTags: ['gluten-free'] },
+                            { name: 'Chicken Rice Bowl', ingredients: ['chicken breast', 'brown rice', 'broccoli', 'carrots', 'teriyaki sauce'], cookTime: 30, servings: 3, difficulty: 'Easy', url: '#', estimatedCost: 15, dietaryTags: ['gluten-free'] }
+                        ],
+                        'Default': [
+                            { name: 'One-Pot Chicken and Rice', ingredients: ['chicken thighs', 'rice', 'onion', 'garlic', 'chicken broth', 'vegetables'], cookTime: 40, servings: 5, difficulty: 'Easy', url: '#', estimatedCost: 13, dietaryTags: ['default'] },
+                            { name: 'Beef Stir Fry', ingredients: ['beef strips', 'mixed vegetables', 'soy sauce', 'ginger', 'rice'], cookTime: 15, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 15, dietaryTags: ['default'] },
+                            { name: 'Baked Cod with Herbs', ingredients: ['cod fillets', 'herbs', 'lemon', 'olive oil', 'potatoes'], cookTime: 30, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 17, dietaryTags: ['default'] },
+                            { name: 'Spaghetti and Meatballs', ingredients: ['ground beef', 'pasta', 'marinara sauce', 'breadcrumbs', 'parmesan'], cookTime: 45, servings: 6, difficulty: 'Medium', url: '#', estimatedCost: 14, dietaryTags: ['default'] },
+                            { name: 'Pork Chops with Apples', ingredients: ['pork chops', 'apples', 'onion', 'thyme', 'chicken broth'], cookTime: 35, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 19, dietaryTags: ['default'] },
+                            { name: 'Chicken Fajitas', ingredients: ['chicken breast', 'bell peppers', 'onions', 'tortillas', 'lime'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 16, dietaryTags: ['default'] }
+                        ]
+                    };
+                    
+                    if (dietaryRestrictions.length > 0) {
+                        const hasVegetarian = dietaryRestrictions.includes('Vegetarian');
+                        const hasVegan = dietaryRestrictions.includes('Vegan');
+                        const hasFlexitarian = dietaryRestrictions.includes('Flexitarian');
+                        
+                        if (hasFlexitarian) {
+                            allRecipes = [
+                                ...expandedRecipeDatabase['Vegan'],
+                                ...expandedRecipeDatabase['Vegetarian'], 
+                                ...expandedRecipeDatabase['Flexitarian'],
+                                ...expandedRecipeDatabase['Default'].slice(0, 3)
+                            ];
+                        } else if (hasVegan) {
+                            allRecipes = [...expandedRecipeDatabase['Vegan']];
+                        } else if (hasVegetarian) {
+                            allRecipes = [
+                                ...expandedRecipeDatabase['Vegan'],
+                                ...expandedRecipeDatabase['Vegetarian']
+                            ];
+                        } else {
+                            dietaryRestrictions.forEach(restriction => {
+                                if (expandedRecipeDatabase[restriction]) {
+                                    allRecipes = [...allRecipes, ...expandedRecipeDatabase[restriction]];
+                                }
+                            });
+                        }
+                        
+                        dietaryRestrictions.forEach(restriction => {
+                            if (restriction !== 'Vegetarian' && restriction !== 'Vegan' && restriction !== 'Flexitarian') {
+                                if (expandedRecipeDatabase[restriction]) {
+                                    const compatibleRecipes = expandedRecipeDatabase[restriction].filter(recipe => {
+                                        if (hasVegetarian && !hasFlexitarian) {
+                                            return recipe.dietaryTags && (
+                                                recipe.dietaryTags.includes('vegetarian') || 
+                                                recipe.dietaryTags.includes('vegan')
+                                            );
+                                        }
+                                        if (hasVegan) {
+                                            return recipe.dietaryTags && recipe.dietaryTags.includes('vegan');
+                                        }
+                                        return true;
+                                    });
+                                    allRecipes = [...allRecipes, ...compatibleRecipes];
+                                }
+                            }
+                        });
+                    } else {
+                        allRecipes = [
+                            ...expandedRecipeDatabase['Default'],
+                            ...expandedRecipeDatabase['Vegetarian'].slice(0, 3),
+                            ...expandedRecipeDatabase['Vegan'].slice(0, 2)
+                        ];
+                    }
+                    
+                    const uniqueRecipes = allRecipes.filter((recipe, index, self) => 
+                        index === self.findIndex(r => r.name === recipe.name)
+                    );
+                    
+                    setRecipes(uniqueRecipes);
+                    
+                } catch (error) {
+                    console.error('Error fetching recipes:', error);
+                    setRecipes([]);
+                }
+                
+                setLoading(false);
+            };
+
+            const fetchStoreDeals = async (store) => {
+                setLoading(true);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const sampleDeals = {
+                    walmart: [
+                        { item: 'Chicken Breast (2lb)', price: '5.99', originalPrice: '7.99' },
+                        { item: 'Rice (5lb bag)', price: '2.99', originalPrice: '4.99' },
+                        { item: 'Mixed Vegetables (frozen)', price: '1.49', originalPrice: '2.49' }
+                    ],
+                    target: [
+                        { item: 'Quinoa (1lb)', price: '3.99', originalPrice: '5.99' },
+                        { item: 'Olive Oil', price: '4.99', originalPrice: '6.99' },
+                        { item: 'Coconut Milk', price: '1.99', originalPrice: '2.99' }
+                    ],
+                    kroger: [
+                        { item: 'Ground Beef (1lb)', price: '4.99', originalPrice: '6.99' },
+                        { item: 'Pasta', price: '0.99', originalPrice: '1.99' },
+                        { item: 'Tomato Sauce', price: '0.79', originalPrice: '1.29' }
+                    ],
+                    publix: [
+                        { item: 'Pub Sub (Whole)', price: '5.99', originalPrice: '8.99' },
+                        { item: 'Fresh Salmon (1lb)', price: '7.99', originalPrice: '10.99' },
+                        { item: 'Publix Brand Cereal', price: '2.49', originalPrice: '3.99' },
+                        { item: 'Boars Head Deli Meat (1lb)', price: '6.99', originalPrice: '9.99' }
+                    ]
+                };
+                
+                const fetchedDeals = sampleDeals[store] || [];
+                const dealsWithIds = fetchedDeals.map(deal => ({ ...deal, id: Date.now() + Math.random() }));
+                
+                setDeals([...deals, ...dealsWithIds]);
+                setLoading(false);
+            };
+
+            const generateMenuPlan = () => {
+                if (recipes.length === 0) {
+                    fetchRecipes().then(() => {
+                        setTimeout(() => generateMenuPlan(), 500);
+                    });
+                    return;
+                }
+                
+                const weeklyBudget = parseFloat(budget) || 100;
+                const totalPeople = numAdults + numKids;
+                const servingMultiplier = Math.max(1, totalPeople / 4);
+                const adjustedBudget = weeklyBudget * servingMultiplier;
+                const dailyBudget = adjustedBudget / 7;
+                
+                const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                
+                let newMenuPlan = {};
+                let allIngredients = [];
+
+                daysOfWeek.forEach(day => {
+                    const suitableRecipes = recipes.filter(recipe => {
+                        const scaledCost = (recipe.estimatedCost * servingMultiplier);
+                        return scaledCost <= dailyBudget * 1.5;
+                    });
+                    
+                    if (suitableRecipes.length > 0) {
+                        const selectedRecipe = suitableRecipes[Math.floor(Math.random() * suitableRecipes.length)];
+                        
+                        let scaledCost = selectedRecipe.estimatedCost * servingMultiplier;
+                        let scaledServings = Math.ceil(selectedRecipe.servings * servingMultiplier);
+                        
+                        selectedRecipe.ingredients.forEach(ingredient => {
+                            const deal = deals.find(d => 
+                                d.item.toLowerCase().includes(ingredient.toLowerCase()) || 
+                                ingredient.toLowerCase().includes(d.item.toLowerCase().split(' ')[0])
+                            );
+                            if (deal) {
+                                const savings = (parseFloat(deal.originalPrice) - parseFloat(deal.price)) || 0;
+                                scaledCost -= Math.min(savings * servingMultiplier, scaledCost * 0.2);
+                            }
+                        });
+
+                        newMenuPlan[day] = {
+                            ...selectedRecipe,
+                            originalCost: selectedRecipe.estimatedCost,
+                            scaledCost: Math.max(scaledCost, selectedRecipe.estimatedCost * servingMultiplier * 0.6),
+                            scaledServings: scaledServings,
+                            servingMultiplier: servingMultiplier
+                        };
+                        
+                        allIngredients = [...allIngredients, ...selectedRecipe.ingredients];
+                    }
+                });
+
+                setMenuPlan(newMenuPlan);
+                setIngredients([...new Set(allIngredients)]);
+            };
+
+            const getTotalCost = () => {
+                return Object.values(menuPlan).reduce((total, meal) => total + (meal.scaledCost || meal.adjustedCost || meal.estimatedCost), 0);
+            };
+
+            return (
+                <div className="max-w-7xl mx-auto p-6 bg-gradient-to-br from-green-50 to-blue-50 min-h-screen">
+                    <div className="bg-white rounded-lg shadow-lg p-8">
+                        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+                            🍽️ Smart Menu Planner with Recipe Search
+                        </h1>
+
+                        {/* Dietary Restrictions Section */}
+                        <div className="mb-8">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                <Icons.Filter />
+                                <span className="ml-2">Dietary Restrictions</span>
+                            </h2>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {commonRestrictions.map(restriction => (
+                                    <button
+                                        key={restriction}
+                                        onClick={() => addDietaryRestriction(restriction)}
+                                        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                                            dietaryRestrictions.includes(restriction)
+                                                ? 'bg-green-500 text-white'
+                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        }`}
+                                    >
+                                        {restriction}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {dietaryRestrictions.map(restriction => (
+                                    <span
+                                        key={restriction}
+                                        className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center"
+                                    >
+                                        {restriction}
+                                        <button
+                                            onClick={() => removeDietaryRestriction(restriction)}
+                                            className="ml-2 text-green-600 hover:text-green-800"
+                                        >
+                                            <Icons.X />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Recipe Section */}
+                        <div className="mb-8">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                <Icons.Search />
+                                <span className="ml-2">Recipe Database</span>
+                            </h2>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <p className="text-sm text-blue-700 mb-3">
+                                    🌐 <strong>Recipe Database:</strong> {recipes.length} recipes loaded automatically based on your dietary restrictions.
+                                    {loading && <span className="ml-2">⏳ Updating recipes...</span>}
+                                </p>
+                            </div>
+                            
+                            {recipes.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {recipes.slice(0, 6).map((recipe, index) => (
+                                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                            <h3 className="font-semibold mb-2">{recipe.name}</h3>
+                                            <div className="text-sm text-gray-600 mb-2">
+                                                ⏱️ {recipe.cookTime} min | 🍽️ {recipe.servings} servings | 📊 {recipe.difficulty}
+                                            </div>
+                                            <div className="text-sm text-gray-600 mb-2">
+                                                <strong>Ingredients:</strong> {recipe.ingredients.slice(0, 3).join(', ')}
+                                                {recipe.ingredients.length > 3 && '...'}
+                                            </div>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-green-600 font-semibold">${recipe.estimatedCost}</span>
+                                                <a href={recipe.url} target="_blank" rel="noopener noreferrer" 
+                                                   className="text-blue-500 hover:text-blue-700">
+                                                    <Icons.ExternalLink />
+                                                </a>
+                                            </div>
+                                            {recipe.dietaryTags && (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {recipe.dietaryTags.map(tag => (
+                                                        <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Budget and People Section */}
+                        <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                    <Icons.DollarSign />
+                                    <span className="ml-2">Weekly Budget</span>
+                                </h2>
+                                <input
+                                    type="number"
+                                    value={budget}
+                                    onChange={(e) => setBudget(e.target.value)}
+                                    placeholder="Enter weekly food budget"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                            
+                            <div>
+                                <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                    <span className="mr-2">👥</span>Number of People
+                                </h2>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Adults</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={numAdults}
+                                            onChange={(e) => setNumAdults(parseInt(e.target.value) || 1)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Kids</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={numKids}
+                                            onChange={(e) => setNumKids(parseInt(e.target.value) || 0)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-2">
+                                    Total: {numAdults + numKids} people
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Store Integration Section */}
+                        <div className="mb-8">
+                            <h2 className="text-xl font-semibold mb-4 flex items-center">
+                                <Icons.ShoppingCart />
+                                <span className="ml-2">Grocery Store Deals</span>
+                            </h2>
+                            
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                <p className="text-sm text-yellow-700 mb-3">
+                                    🏪 <strong>Auto-Deal Fetching:</strong> Connect to store APIs to automatically pull weekly deals.
+                                    <br />• <strong>Publix Integration:</strong> Weekly ad data available from publix.com/savings/weekly-ad
+                                    <br />• <strong>Implementation:</strong> Can scrape weekly flyers or use third-party services like Instacart API
+                                </p>
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {stores.map(store => (
+                                        <button
+                                            key={store.api}
+                                            onClick={() => store.supported && fetchStoreDeals(store.api)}
+                                            disabled={!store.supported || loading}
+                                            className={`px-3 py-1 rounded text-sm ${
+                                                store.supported 
+                                                    ? 'bg-green-500 text-white hover:bg-green-600 disabled:opacity-50' 
+                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            {store.name} {!store.supported && '(Coming Soon)'}
+                                        </button>
+                                    ))}
+                                </div>
+                                {loading && (
+                                    <div className="flex items-center text-blue-600">
+                                        <Icons.RefreshCw className="mr-2 animate-spin" />
+                                        Fetching store deals...
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Manual Deal Entry */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <input
+                                    type="text"
+                                    value={newDeal.item}
+                                    onChange={(e) => setNewDeal({...newDeal, item: e.target.value})}
+                                    placeholder="Item name"
+                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={newDeal.price}
+                                    onChange={(e) => setNewDeal({...newDeal, price: e.target.value})}
+                                    placeholder="Sale price"
+                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={newDeal.originalPrice}
+                                    onChange={(e) => setNewDeal({...newDeal, originalPrice: e.target.value})}
+                                    placeholder="Original price"
+                                    className="px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                            <button
+                                onClick={addDeal}
+                                className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center"
+                            >
+                                <Icons.Plus />
+                                <span className="ml-2">Add Manual Deal</span>
+                            </button>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {deals.map(deal => (
+                                    <div key={deal.id} className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex justify-between items-center">
+                                        <div>
+                                            <div className="font-medium">{deal.item}</div>
+                                            <div className="text-sm text-gray-600">
+                                                ${deal.price}
+                                                {deal.originalPrice && (
+                                                    <span className="ml-2 line-through text-red-500">
+                                                        ${deal.originalPrice}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => removeDeal(deal.id)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            <Icons.X />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Generate Menu Button */}
+                        <div className="text-center mb-8">
+                            <button
+                                onClick={generateMenuPlan}
+                                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg flex items-center mx-auto"
+                            >
+                                <Icons.Calendar />
+                                <span className="ml-2">Generate Weekly Menu</span>
+                            </button>
+                        </div>
+
+                        {/* Menu Plan Display */}
+                        {Object.keys(menuPlan).length > 0 && (
+                            <div className="mb-8">
+                                <h2 className="text-xl font-semibold mb-4">Your Weekly Menu Plan</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                    {Object.entries(menuPlan).map(([day, meal]) => (
+                                        <div key={day} className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                                            <h3 className="font-semibold text-lg mb-2">{day}</h3>
+                                            <h4 className="font-medium text-blue-700 mb-2 flex items-center">
+                                                {meal.name}
+                                                <a href={meal.url} target="_blank" rel="noopener noreferrer" 
+                                                   className="ml-2 text-blue-500 hover:text-blue-700">
+                                                    <Icons.ExternalLink />
+                                                </a>
+                                            </h4>
+                                            <div className="text-sm text-gray-600 mb-2">
+                                                ⏱️ {meal.cookTime} min | 🍽️ {meal.scaledServings || meal.servings} servings
+                                                {meal.servingMultiplier > 1 && (
+                                                    <span className="text-blue-600"> (scaled for {numAdults + numKids} people)</span>
+                                                )}
+                                            </div>
+                                            <div className="text-sm text-gray-600 mb-2">
+                                                <strong>Ingredients:</strong> {meal.ingredients.join(', ')}
+                                            </div>
+                                            <div className="text-sm font-medium text-green-600">
+                                                Cost: ${meal.scaledCost?.toFixed(2) || meal.adjustedCost?.toFixed(2) || meal.estimatedCost?.toFixed(2)}
+                                                {meal.originalCost && meal.scaledCost !== meal.originalCost && (
+                                                    <span className="text-xs text-gray-500 ml-1">
+                                                        (was ${meal.originalCost.toFixed(2)})
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                <div className="bg-green-100 border border-green-300 rounded-lg p-4 mb-6">
+                                    <h3 className="font-semibold text-lg mb-2">Budget Summary</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div>
+                                            <span className="text-gray-600">People:</span>
+                                            <span className="font-semibold ml-2">{numAdults + numKids}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">Weekly Budget:</span>
+                                            <span className="font-semibold ml-2">${budget || '100'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">Estimated Total:</span>
+                                            <span className="font-semibold ml-2">${getTotalCost().toFixed(2)}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">Per Person:</span>
+                                            <span className="font-semibold ml-2">${(getTotalCost() / (numAdults + numKids)).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2">
+                                        <span className="text-gray-600">Remaining Budget:</span>
+                                        <span className={`font-semibold ml-2 ${
+                                            (parseFloat(budget) || 100) - getTotalCost() >= 0 ? 'text-green-600' : 'text-red-600'
+                                        }`}>
+                                            ${((parseFloat(budget) || 100) - getTotalCost()).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h3 className="font-semibold text-lg mb-2">Shopping List</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                        {ingredients.map((ingredient, index) => (
+                                            <div key={index} className="bg-white rounded px-3 py-1 text-sm border">
+                                                {ingredient}
+                                                {deals.some(deal => 
+                                                    deal.item.toLowerCase().includes(ingredient.toLowerCase()) ||
+                                                    ingredient.toLowerCase().includes(deal.item.toLowerCase().split(' ')[0])
+                                                ) && (
+                                                    <span className="ml-1 text-green-600 font-bold">🏷️</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(React.createElement(MenuPlanner), document.getElementById('root'));
+    </script>
+</body>
+</html>
+                                            
