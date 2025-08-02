@@ -500,43 +500,70 @@ const fetchRecipes = async () => {
                             </div>
                         </div>
 
-                        {/* Store Integration Section */}
-                        <div className="mb-8">
-                            <h2 className="text-xl font-semibold mb-4 flex items-center">
-                                <Icons.ShoppingCart />
-                                <span className="ml-2">Grocery Store Deals</span>
-                            </h2>
-                            
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                                <p className="text-sm text-yellow-700 mb-3">
-                                    🏪 <strong>Auto-Deal Fetching:</strong> Connect to store APIs to automatically pull weekly deals.
-                                    <br />• <strong>Publix Integration:</strong> Weekly ad data available from publix.com/savings/weekly-ad
-                                    <br />• <strong>Implementation:</strong> Can scrape weekly flyers or use third-party services like Instacart API
-                                </p>
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    {stores.map(store => (
-                                        <button
-                                            key={store.api}
-                                            onClick={() => store.supported && fetchStoreDeals(store.api)}
-                                            disabled={!store.supported || loading}
-                                            className={`px-3 py-1 rounded text-sm ${
-                                                store.supported 
-                                                    ? 'bg-green-500 text-white hover:bg-green-600 disabled:opacity-50' 
-                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                            }`}
-                                        >
-                                            {store.name} {!store.supported && '(Coming Soon)'}
-                                        </button>
-                                    ))}
-                                </div>
-                                {loading && (
-                                    <div className="flex items-center text-blue-600">
-                                        <Icons.RefreshCw className="mr-2 animate-spin" />
-                                        Fetching store deals...
-                                    </div>
-                                )}
-                            </div>
-
+                        {/* Store Integration Section - Replace the entire deals section with this */}
+<div className="mb-8">
+  <h2 className="text-xl font-semibold mb-4 flex items-center">
+    <Icons.ShoppingCart />
+    <span className="ml-2">Grocery Store Deal Integration</span>
+  </h2>
+  
+  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-6">
+    <div className="flex items-start">
+      <div className="flex-shrink-0">
+        <span className="text-2xl">🚧</span>
+      </div>
+      <div className="ml-4">
+        <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+          Real-Time Store Deals - Coming Soon!
+        </h3>
+        <p className="text-yellow-700 mb-4">
+          I'm working on integrating live grocery store APIs to automatically fetch weekly deals and sales. 
+          This feature will connect with major retailers to help you save money on your meal planning.
+        </p>
+        
+        <div className="bg-white bg-opacity-60 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold text-yellow-800 mb-2">🎯 Planned Integrations:</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+            <div className="flex items-center text-yellow-700">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+              Walmart API
+            </div>
+            <div className="flex items-center text-yellow-700">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+              Target RedSky
+            </div>
+            <div className="flex items-center text-yellow-700">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+              Instacart API
+            </div>
+            <div className="flex items-center text-yellow-700">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+              Kroger Partner
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-sm text-blue-700">
+            <strong>🔧 Technical Challenge:</strong> Most grocery stores require backend proxy servers 
+            to handle CORS restrictions and API authentication. Currently researching the best 
+            architecture for real-time deal aggregation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {/* Optional: Manual deal entry for demo purposes */}
+  <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+    <h4 className="font-medium text-gray-700 mb-2">💡 In the meantime:</h4>
+    <p className="text-sm text-gray-600">
+      Users can manually track their grocery deals, or the app could integrate with existing 
+      deal-tracking services like Flipp, Honey, or store-specific apps.
+    </p>
+  </div>
+</div>
+                        
                             {/* Manual Deal Entry */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <input
