@@ -500,25 +500,25 @@ const fetchRecipes = async () => {
                             </div>
                         </div>
 
-                        {/* Store Integration Section - Replace the entire deals section with this */}
+                        {/* Store Integration Section */}
 <div className="mb-8">
   <h2 className="text-xl font-semibold mb-4 flex items-center">
     <Icons.ShoppingCart />
     <span className="ml-2">Grocery Store Deal Integration</span>
   </h2>
   
-  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-6">
+  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-6 mb-6">
     <div className="flex items-start">
       <div className="flex-shrink-0">
         <span className="text-2xl">🚧</span>
       </div>
       <div className="ml-4">
         <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-          Real-Time Store Deals - Coming Soon!
+          Auto-Deal Fetching - Coming Soon!
         </h3>
         <p className="text-yellow-700 mb-4">
-          I'm working on integrating live grocery store APIs to automatically fetch weekly deals and sales. 
-          This feature will connect with major retailers to help you save money on your meal planning.
+          Working on integrating live grocery store APIs to automatically fetch weekly deals. 
+          For now, you can manually add deals below to see how cost optimization works!
         </p>
         
         <div className="bg-white bg-opacity-60 rounded-lg p-4 mb-4">
@@ -542,25 +542,79 @@ const fetchRecipes = async () => {
             </div>
           </div>
         </div>
-        
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-sm text-blue-700">
-            <strong>🔧 Technical Challenge:</strong> Most grocery stores require backend proxy servers 
-            to handle CORS restrictions and API authentication. Currently researching the best 
-            architecture for real-time deal aggregation.
-          </p>
-        </div>
       </div>
     </div>
   </div>
-  
-  {/* Optional: Manual deal entry for demo purposes */}
-  <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-    <h4 className="font-medium text-gray-700 mb-2">💡 In the meantime:</h4>
-    <p className="text-sm text-gray-600">
-      Users can manually track their grocery deals, or the app could integrate with existing 
-      deal-tracking services like Flipp, Honey, or store-specific apps.
+
+  {/* Manual Deal Entry */}
+  <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <h3 className="font-semibold text-gray-800 mb-3">💰 Add Current Deals</h3>
+    <p className="text-sm text-gray-600 mb-4">
+      Enter deals you found at your grocery store. The app will automatically apply savings when ingredients match!
     </p>
+    
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <input
+        type="text"
+        value={newDeal.item}
+        onChange={(e) => setNewDeal({...newDeal, item: e.target.value})}
+        placeholder="Item name (e.g., Chicken Breast)"
+        className="px-3 py-2 border border-gray-300 rounded-md"
+      />
+      <input
+        type="number"
+        step="0.01"
+        value={newDeal.price}
+        onChange={(e) => setNewDeal({...newDeal, price: e.target.value})}
+        placeholder="Sale price ($)"
+        className="px-3 py-2 border border-gray-300 rounded-md"
+      />
+      <input
+        type="number"
+        step="0.01"
+        value={newDeal.originalPrice}
+        onChange={(e) => setNewDeal({...newDeal, originalPrice: e.target.value})}
+        placeholder="Original price ($)"
+        className="px-3 py-2 border border-gray-300 rounded-md"
+      />
+    </div>
+    <button
+      onClick={addDeal}
+      className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center"
+    >
+      <Icons.Plus />
+      <span className="ml-2">Add Deal</span>
+    </button>
+
+    {/* Display Added Deals */}
+    {deals.length > 0 && (
+      <div>
+        <h4 className="font-medium text-gray-700 mb-2">Current Deals:</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {deals.map(deal => (
+            <div key={deal.id} className="bg-green-50 border border-green-200 rounded-md p-3 flex justify-between items-center">
+              <div>
+                <div className="font-medium">{deal.item}</div>
+                <div className="text-sm text-gray-600">
+                  ${deal.price}
+                  {deal.originalPrice && (
+                    <span className="ml-2 line-through text-red-500">
+                      ${deal.originalPrice}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => removeDeal(deal.id)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <Icons.X />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
   </div>
 </div>
                         {/* Generate Menu Button */}
