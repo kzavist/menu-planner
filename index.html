@@ -563,66 +563,6 @@ const fetchRecipes = async () => {
     </p>
   </div>
 </div>
-                        
-                            {/* Manual Deal Entry */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <input
-                                    type="text"
-                                    value={newDeal.item}
-                                    onChange={(e) => setNewDeal({...newDeal, item: e.target.value})}
-                                    placeholder="Item name"
-                                    className="px-3 py-2 border border-gray-300 rounded-md"
-                                />
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={newDeal.price}
-                                    onChange={(e) => setNewDeal({...newDeal, price: e.target.value})}
-                                    placeholder="Sale price"
-                                    className="px-3 py-2 border border-gray-300 rounded-md"
-                                />
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={newDeal.originalPrice}
-                                    onChange={(e) => setNewDeal({...newDeal, originalPrice: e.target.value})}
-                                    placeholder="Original price"
-                                    className="px-3 py-2 border border-gray-300 rounded-md"
-                                />
-                            </div>
-                            <button
-                                onClick={addDeal}
-                                className="mb-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center"
-                            >
-                                <Icons.Plus />
-                                <span className="ml-2">Add Manual Deal</span>
-                            </button>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {deals.map(deal => (
-                                    <div key={deal.id} className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex justify-between items-center">
-                                        <div>
-                                            <div className="font-medium">{deal.item}</div>
-                                            <div className="text-sm text-gray-600">
-                                                ${deal.price}
-                                                {deal.originalPrice && (
-                                                    <span className="ml-2 line-through text-red-500">
-                                                        ${deal.originalPrice}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeDeal(deal.id)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            <Icons.X />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
                         {/* Generate Menu Button */}
                         <div className="text-center mb-8">
                             <button
