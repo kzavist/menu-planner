@@ -121,123 +121,137 @@
                 setDeals(deals.filter(deal => deal.id !== id));
             };
 
-            const fetchRecipes = async () => {
-                setLoading(true);
-                
-                try {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    let allRecipes = [];
-                    
-                    const expandedRecipeDatabase = {
-                        'Vegetarian': [
-                            { name: 'Mediterranean Quinoa Bowl', ingredients: ['quinoa', 'chickpeas', 'cucumber', 'tomatoes', 'feta cheese', 'olive oil'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 12, dietaryTags: ['vegetarian'] },
-                            { name: 'Veggie Pad Thai', ingredients: ['rice noodles', 'tofu', 'bean sprouts', 'peanuts', 'lime', 'pad thai sauce'], cookTime: 20, servings: 3, difficulty: 'Medium', url: '#', estimatedCost: 10, dietaryTags: ['vegetarian'] },
-                            { name: 'Spinach Ricotta Shells', ingredients: ['pasta shells', 'spinach', 'ricotta cheese', 'mozzarella', 'marinara sauce'], cookTime: 45, servings: 6, difficulty: 'Medium', url: '#', estimatedCost: 14, dietaryTags: ['vegetarian'] },
-                            { name: 'Caprese Grilled Cheese', ingredients: ['sourdough bread', 'mozzarella', 'tomatoes', 'basil', 'balsamic glaze'], cookTime: 10, servings: 2, difficulty: 'Easy', url: '#', estimatedCost: 8, dietaryTags: ['vegetarian'] },
-                            { name: 'Mushroom Risotto', ingredients: ['arborio rice', 'mushrooms', 'vegetable broth', 'parmesan', 'white wine'], cookTime: 35, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 16, dietaryTags: ['vegetarian'] },
-                            { name: 'Eggplant Parmesan', ingredients: ['eggplant', 'marinara sauce', 'mozzarella', 'parmesan', 'breadcrumbs'], cookTime: 60, servings: 6, difficulty: 'Medium', url: '#', estimatedCost: 18, dietaryTags: ['vegetarian'] },
-                            { name: 'Vegetable Curry', ingredients: ['mixed vegetables', 'coconut milk', 'curry powder', 'onion', 'garlic', 'rice'], cookTime: 30, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 11, dietaryTags: ['vegetarian'] },
-                            { name: 'Black Bean Quesadillas', ingredients: ['tortillas', 'black beans', 'cheese', 'peppers', 'onion'], cookTime: 15, servings: 3, difficulty: 'Easy', url: '#', estimatedCost: 9, dietaryTags: ['vegetarian'] }
-                        ],
-                        'Vegan': [
-                            { name: 'Lentil Walnut Bolognese', ingredients: ['lentils', 'walnuts', 'carrots', 'celery', 'tomato sauce', 'pasta'], cookTime: 35, servings: 6, difficulty: 'Easy', url: '#', estimatedCost: 8, dietaryTags: ['vegan', 'vegetarian'] },
-                            { name: 'Chickpea Curry', ingredients: ['chickpeas', 'coconut milk', 'curry spices', 'onion', 'garlic', 'rice'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 9, dietaryTags: ['vegan', 'vegetarian'] },
-                            { name: 'Buddha Bowl', ingredients: ['quinoa', 'roasted vegetables', 'chickpeas', 'tahini', 'hemp seeds'], cookTime: 30, servings: 2, difficulty: 'Easy', url: '#', estimatedCost: 13, dietaryTags: ['vegan', 'vegetarian'] },
-                            { name: 'Vegan Tacos', ingredients: ['corn tortillas', 'black beans', 'avocado', 'salsa', 'lettuce'], cookTime: 15, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 10, dietaryTags: ['vegan', 'vegetarian'] },
-                            { name: 'Coconut Rice with Vegetables', ingredients: ['jasmine rice', 'coconut milk', 'mixed vegetables', 'soy sauce'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 12, dietaryTags: ['vegan', 'vegetarian'] },
-                            { name: 'Stuffed Bell Peppers', ingredients: ['bell peppers', 'quinoa', 'black beans', 'corn', 'nutritional yeast'], cookTime: 40, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 15, dietaryTags: ['vegan', 'vegetarian'] }
-                        ],
-                        'Flexitarian': [
-                            { name: 'Mediterranean Quinoa Bowl', ingredients: ['quinoa', 'chickpeas', 'cucumber', 'tomatoes', 'feta cheese', 'olive oil'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 12, dietaryTags: ['vegetarian', 'flexitarian'] },
-                            { name: 'Grilled Chicken Salad', ingredients: ['chicken breast', 'mixed greens', 'cherry tomatoes', 'cucumber', 'olive oil'], cookTime: 20, servings: 2, difficulty: 'Easy', url: '#', estimatedCost: 16, dietaryTags: ['flexitarian'] },
-                            { name: 'Turkey Vegetable Stir Fry', ingredients: ['ground turkey', 'mixed vegetables', 'soy sauce', 'ginger', 'rice'], cookTime: 20, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 14, dietaryTags: ['flexitarian'] },
-                            { name: 'Fish Tacos', ingredients: ['white fish', 'corn tortillas', 'cabbage slaw', 'avocado', 'lime'], cookTime: 25, servings: 3, difficulty: 'Medium', url: '#', estimatedCost: 18, dietaryTags: ['flexitarian'] },
-                            { name: 'Veggie Burger Night', ingredients: ['veggie patties', 'burger buns', 'lettuce', 'tomato', 'avocado'], cookTime: 15, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 16, dietaryTags: ['vegetarian', 'flexitarian'] }
-                        ],
-                        'Gluten-Free': [
-                            { name: 'Thai Curry with Rice', ingredients: ['coconut milk', 'curry paste', 'vegetables', 'jasmine rice', 'lime'], cookTime: 30, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 11, dietaryTags: ['gluten-free', 'vegetarian'] },
-                            { name: 'Grilled Salmon with Vegetables', ingredients: ['salmon fillets', 'asparagus', 'bell peppers', 'olive oil', 'lemon'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 18, dietaryTags: ['gluten-free'] },
-                            { name: 'Quinoa Stuffed Peppers', ingredients: ['bell peppers', 'quinoa', 'ground turkey', 'tomatoes', 'cheese'], cookTime: 45, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 17, dietaryTags: ['gluten-free'] },
-                            { name: 'Chicken Rice Bowl', ingredients: ['chicken breast', 'brown rice', 'broccoli', 'carrots', 'teriyaki sauce'], cookTime: 30, servings: 3, difficulty: 'Easy', url: '#', estimatedCost: 15, dietaryTags: ['gluten-free'] }
-                        ],
-                        'Default': [
-                            { name: 'One-Pot Chicken and Rice', ingredients: ['chicken thighs', 'rice', 'onion', 'garlic', 'chicken broth', 'vegetables'], cookTime: 40, servings: 5, difficulty: 'Easy', url: '#', estimatedCost: 13, dietaryTags: ['default'] },
-                            { name: 'Beef Stir Fry', ingredients: ['beef strips', 'mixed vegetables', 'soy sauce', 'ginger', 'rice'], cookTime: 15, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 15, dietaryTags: ['default'] },
-                            { name: 'Baked Cod with Herbs', ingredients: ['cod fillets', 'herbs', 'lemon', 'olive oil', 'potatoes'], cookTime: 30, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 17, dietaryTags: ['default'] },
-                            { name: 'Spaghetti and Meatballs', ingredients: ['ground beef', 'pasta', 'marinara sauce', 'breadcrumbs', 'parmesan'], cookTime: 45, servings: 6, difficulty: 'Medium', url: '#', estimatedCost: 14, dietaryTags: ['default'] },
-                            { name: 'Pork Chops with Apples', ingredients: ['pork chops', 'apples', 'onion', 'thyme', 'chicken broth'], cookTime: 35, servings: 4, difficulty: 'Medium', url: '#', estimatedCost: 19, dietaryTags: ['default'] },
-                            { name: 'Chicken Fajitas', ingredients: ['chicken breast', 'bell peppers', 'onions', 'tortillas', 'lime'], cookTime: 25, servings: 4, difficulty: 'Easy', url: '#', estimatedCost: 16, dietaryTags: ['default'] }
-                        ]
-                    };
-                    
-                    if (dietaryRestrictions.length > 0) {
-                        const hasVegetarian = dietaryRestrictions.includes('Vegetarian');
-                        const hasVegan = dietaryRestrictions.includes('Vegan');
-                        const hasFlexitarian = dietaryRestrictions.includes('Flexitarian');
-                        
-                        if (hasFlexitarian) {
-                            allRecipes = [
-                                ...expandedRecipeDatabase['Vegan'],
-                                ...expandedRecipeDatabase['Vegetarian'], 
-                                ...expandedRecipeDatabase['Flexitarian'],
-                                ...expandedRecipeDatabase['Default'].slice(0, 3)
-                            ];
-                        } else if (hasVegan) {
-                            allRecipes = [...expandedRecipeDatabase['Vegan']];
-                        } else if (hasVegetarian) {
-                            allRecipes = [
-                                ...expandedRecipeDatabase['Vegan'],
-                                ...expandedRecipeDatabase['Vegetarian']
-                            ];
-                        } else {
-                            dietaryRestrictions.forEach(restriction => {
-                                if (expandedRecipeDatabase[restriction]) {
-                                    allRecipes = [...allRecipes, ...expandedRecipeDatabase[restriction]];
-                                }
-                            });
-                        }
-                        
-                        dietaryRestrictions.forEach(restriction => {
-                            if (restriction !== 'Vegetarian' && restriction !== 'Vegan' && restriction !== 'Flexitarian') {
-                                if (expandedRecipeDatabase[restriction]) {
-                                    const compatibleRecipes = expandedRecipeDatabase[restriction].filter(recipe => {
-                                        if (hasVegetarian && !hasFlexitarian) {
-                                            return recipe.dietaryTags && (
-                                                recipe.dietaryTags.includes('vegetarian') || 
-                                                recipe.dietaryTags.includes('vegan')
-                                            );
-                                        }
-                                        if (hasVegan) {
-                                            return recipe.dietaryTags && recipe.dietaryTags.includes('vegan');
-                                        }
-                                        return true;
-                                    });
-                                    allRecipes = [...allRecipes, ...compatibleRecipes];
-                                }
-                            }
-                        });
-                    } else {
-                        allRecipes = [
-                            ...expandedRecipeDatabase['Default'],
-                            ...expandedRecipeDatabase['Vegetarian'].slice(0, 3),
-                            ...expandedRecipeDatabase['Vegan'].slice(0, 2)
-                        ];
-                    }
-                    
-                    const uniqueRecipes = allRecipes.filter((recipe, index, self) => 
-                        index === self.findIndex(r => r.name === recipe.name)
-                    );
-                    
-                    setRecipes(uniqueRecipes);
-                    
-                } catch (error) {
-                    console.error('Error fetching recipes:', error);
-                    setRecipes([]);
-                }
-                
-                setLoading(false);
-            };
+            // Replace your fetchRecipes function with this:
+const fetchRecipes = async () => {
+  setLoading(true);
+  
+  try {
+    let allRecipes = [];
+    
+    if (dietaryRestrictions.length > 0) {
+      const hasVegetarian = dietaryRestrictions.includes('Vegetarian');
+      const hasVegan = dietaryRestrictions.includes('Vegan');
+      const hasFlexitarian = dietaryRestrictions.includes('Flexitarian');
+      
+      // TheMealDB API calls based on dietary restrictions
+      if (hasVegan || hasVegetarian) {
+        // Get vegetarian meals
+        const vegResponse = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?c=Vegetarian');
+        const vegData = await vegResponse.json();
+        if (vegData.meals) {
+          allRecipes = [...allRecipes, ...vegData.meals.slice(0, 10)];
+        }
+      }
+      
+      if (hasFlexitarian || (!hasVegetarian && !hasVegan)) {
+        // Get chicken meals for flexitarian/omnivores
+        const chickenResponse = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?i=chicken');
+        const chickenData = await chickenResponse.json();
+        if (chickenData.meals) {
+          allRecipes = [...allRecipes, ...chickenData.meals.slice(0, 8)];
+        }
+        
+        // Get beef meals
+        const beefResponse = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?i=beef');
+        const beefData = await beefResponse.json();
+        if (beefData.meals) {
+          allRecipes = [...allRecipes, ...beefData.meals.slice(0, 5)];
+        }
+      }
+      
+      // Add seafood for non-vegetarian diets
+      if (hasFlexitarian || (!hasVegetarian && !hasVegan)) {
+        const seafoodResponse = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood');
+        const seafoodData = await seafoodResponse.json();
+        if (seafoodData.meals) {
+          allRecipes = [...allRecipes, ...seafoodData.meals.slice(0, 5)];
+        }
+      }
+    } else {
+      // No dietary restrictions - get variety
+      const categories = ['Chicken', 'Beef', 'Seafood', 'Vegetarian', 'Pasta'];
+      
+      for (const category of categories) {
+        try {
+          const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
+          const data = await response.json();
+          if (data.meals) {
+            allRecipes = [...allRecipes, ...data.meals.slice(0, 4)];
+          }
+        } catch (error) {
+          console.error(`Error fetching ${category}:`, error);
+        }
+      }
+    }
+    
+    // Transform TheMealDB format to your app's format
+    const transformedRecipes = await Promise.all(
+      allRecipes.slice(0, 25).map(async (meal) => {
+        try {
+          // Get detailed recipe info
+          const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`);
+          const detailData = await detailResponse.json();
+          const fullMeal = detailData.meals[0];
+          
+          // Extract ingredients
+          const ingredients = [];
+          for (let i = 1; i <= 20; i++) {
+            const ingredient = fullMeal[`strIngredient${i}`];
+            if (ingredient && ingredient.trim()) {
+              ingredients.push(ingredient.trim().toLowerCase());
+            }
+          }
+          
+          // Estimate cost based on ingredients (simple algorithm)
+          const estimatedCost = Math.max(8, Math.min(25, ingredients.length * 2 + Math.random() * 5));
+          
+          // Determine dietary tags
+          const dietaryTags = [];
+          if (fullMeal.strCategory === 'Vegetarian') dietaryTags.push('vegetarian');
+          if (!ingredients.some(ing => ['chicken', 'beef', 'pork', 'fish', 'meat'].includes(ing))) {
+            dietaryTags.push('vegetarian');
+          }
+          if (!ingredients.some(ing => ['cheese', 'milk', 'cream', 'butter', 'egg'].includes(ing)) && 
+              dietaryTags.includes('vegetarian')) {
+            dietaryTags.push('vegan');
+          }
+          dietaryTags.push('flexitarian');
+          
+          return {
+            name: fullMeal.strMeal,
+            ingredients: ingredients.slice(0, 8), // Limit to 8 main ingredients
+            cookTime: 30 + Math.floor(Math.random() * 30), // Estimate 30-60 mins
+            servings: 4,
+            difficulty: ['Easy', 'Medium'][Math.floor(Math.random() * 2)],
+            url: fullMeal.strSource || `https://www.themealdb.com/meal/${meal.idMeal}`,
+            estimatedCost: Math.round(estimatedCost),
+            dietaryTags: dietaryTags,
+            image: fullMeal.strMealThumb
+          };
+        } catch (error) {
+          console.error('Error processing meal:', error);
+          return null;
+        }
+      })
+    );
+    
+    // Filter out any failed transformations and remove duplicates
+    const validRecipes = transformedRecipes
+      .filter(recipe => recipe !== null)
+      .filter((recipe, index, self) => 
+        index === self.findIndex(r => r.name === recipe.name)
+      );
+    
+    setRecipes(validRecipes);
+    
+  } catch (error) {
+    console.error('Error fetching recipes from TheMealDB:', error);
+    // Fallback to your existing sample data
+    setRecipes(sampleRecipes['Default'] || []);
+  }
+  
+  setLoading(false);
+};
 
             const fetchStoreDeals = async (store) => {
                 if (loading) return; // Prevent multiple simultaneous calls
