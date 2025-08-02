@@ -240,8 +240,10 @@
             };
 
             const fetchStoreDeals = async (store) => {
+                if (loading) return; // Prevent multiple simultaneous calls
                 setLoading(true);
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 const sampleDeals = {
                     walmart: [
@@ -271,7 +273,11 @@
                 const dealsWithIds = fetchedDeals.map(deal => ({ ...deal, id: Date.now() + Math.random() }));
                 
                 setDeals([...deals, ...dealsWithIds]);
+                } catch (error) {
+                    console.error('Error fetching deals:', error);
+                } finally {
                 setLoading(false);
+                }
             };
 
             const generateMenuPlan = () => {
