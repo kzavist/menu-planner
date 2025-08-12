@@ -1,4 +1,19 @@
 # menu-planner
-This is a POC for a menu planner that will eventually have AI integration.
-The purpose of this POC is show my ability to work with AI in generating useful/demoable POCs.
-This was generated using Claude AI.
+Menu Planner POC
+
+Quick meal planning app built with AI assistance to explore rapid prototyping workflows.
+
+[Live Demo](https://kzavist.github.io/menu-planner)
+
+## What it does
+- Plans weekly meals based on dietary restrictions
+- Calculates costs and scales for family size
+- Pulls real recipes from TheMealDB API
+- Generates shopping lists
+
+## Built with
+- React, Tailwind CSS
+- TheMealDB API
+- GitHub Pages
+
+Built with Claude AI to test AI-assisted development for product prototyping.
